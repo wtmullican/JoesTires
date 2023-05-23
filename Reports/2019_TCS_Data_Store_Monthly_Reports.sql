@@ -93,7 +93,10 @@ DECLARE @SalesData TABLE
 	PAR_Ply				varchar(35),
 
 	SER_Code			varchar(20),
-	SER_Description		varchar(255)
+	SER_Description		varchar(255),
+
+	BayTime				int
+
 )
 
 INSERT INTO @SalesData (
@@ -155,10 +158,12 @@ WHERE TRA_VoidDateTime IS NULL
 --	--------------------------------------------------------------------------
 --	UPDATE DATA FIELDS FROM RAW DATA.
 --	--------------------------------------------------------------------------
---	Handle Field Look-ups
+--	Handle Field Look-ups and calculations
+--	--------------------------------------------------------------------------
 UPDATE @SalesData SET
 	PEO_CustomerName = dbo.GetPEO_Name_FN(TRA_PeopleID, TRA_SiteID, 1)
 	, DET_Profit = ISNULL((DET_Amount - (DET_UnitCostLast * DET_Qty)),0)
+	, BayTime = DATEDIFF(N,TRA_InsertDateTime,TRA_DateAndTime) / 60.00	
 WHERE 1=1
 --	--------------------------------------------------------------------------
 --	Handle Vehicle Look-ups
