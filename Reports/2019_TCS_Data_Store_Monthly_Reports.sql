@@ -4,7 +4,7 @@ DECLARE
 --	--------------------------------------------------------------------------
 --	Set your Date Range
 --	--------------------------------------------------------------------------
-SET @pBegDT = '2023-04-01'
+SET @pBegDT = '2023-05-21'
 SET @pEndDT = dbo.Get_DatePart_FN(NULL)
 --SELECT @pBegDT as BegDate, @pEndDT AS EndDate
 --	--------------------------------------------------------------------------
@@ -168,6 +168,13 @@ UPDATE @SalesData SET
 	, AUT_Make = dbo.GetAUT_Desc_FN(TRA_AutoID,11)
 	, AUT_Model = dbo.GetAUT_Desc_FN(TRA_AutoID,12)
 WHERE TRA_AutoID <> 0
+
+UPDATE @SalesData SET
+	AUT_Year = 0
+	, AUT_Make = ''
+	, AUT_Model = ''
+WHERE TRA_AutoID = 0
+
 --	--------------------------------------------------------------------------
 --	Handle PCG_Desc_Overwrite
 --		SELECT * FROM dbo.PeopleCategory WHERE PCG_PeopleType = 1
@@ -217,8 +224,10 @@ UPDATE sd SET
 	sd.PAR_PartNumber = p.PAR_PartNumber
 	, sd.MAN_Name = dbo.GetMAN_Name_FN(PAR_ManID)
 	, sd.PAR_Model = p.PAR_Model
-	, sd.PAR_QuickSearch = p.PAR_QuickSearch
-	, sd.PAR_Ply = p.PAR_Ply
+	, sd.PAR_QuickSearch = ISNULL(p.PAR_QuickSearch,'')
+	, sd.PAR_Ply = ISNULL(p.PAR_Ply,'')
+	, sd.SER_Code = ''
+	, sd.SER_Description = ''
 FROM @SalesData as sd
 JOIN dbo.Parts as p ON p.PAR_PartID = sd.DET_PartID
 WHERE sd.DET_DetTypeID <> 4 AND sd.DET_PartID <> 0
@@ -228,10 +237,14 @@ WHERE sd.DET_DetTypeID <> 4 AND sd.DET_PartID <> 0
 UPDATE sd SET 
 	sd.SER_Code = s.SER_Code
 	, sd.SER_Description = s.SER_Description
+	, sd.PAR_PartNumber = ''
+	, sd.MAN_Name = ''
+	, sd.PAR_Model = ''
+	, sd.PAR_QuickSearch = ''
+	, sd.PAR_Ply = ''
 FROM @SalesData as sd
 JOIN dbo.[Service] as s on s.SER_ServiceID = sd.DET_PartID
 WHERE sd.DET_DetTypeID = 4 AND sd.DET_PartID <> 0
-
 --	--------------------------------------------------------------------------
 --	Return Data
 --	--------------------------------------------------------------------------
